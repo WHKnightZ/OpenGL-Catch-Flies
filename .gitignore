@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+
+/Draft/
+/.objs/
+
+*.win
+*.layout
+*.cbp
+*.depend
