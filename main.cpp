@@ -11,8 +11,12 @@ void Resize(int x, int y) {
     glutReshapeWindow(WIDTH, HEIGHT);
 }
 
-void Keyboard(GLubyte key, int x, int y) {
-    Game_Keyboard_Func[Game_State](key);
+void Keyboard_Down(GLubyte key, int x, int y) {
+    Game_Keyboard_Down_Func[Game_State](key);
+}
+
+void Keyboard_Up(GLubyte key, int x, int y) {
+    Game_Keyboard_Up_Func[Game_State](key);
 }
 
 void Special(int key, int x, int y) {
@@ -35,7 +39,8 @@ int main(int argc, char **argv) {
     glutCreateWindow("Catch Flies");
     Init_GL();
     glutDisplayFunc(Display);
-    glutKeyboardFunc(Keyboard);
+    glutKeyboardFunc(Keyboard_Down);
+    glutKeyboardUpFunc(Keyboard_Up);
     glutSpecialFunc(Special);
     glutTimerFunc(0, Timer, 0);
     glutMainLoop();

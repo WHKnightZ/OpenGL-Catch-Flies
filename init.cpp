@@ -21,28 +21,11 @@ void Reload_Game() {
 
     Frogs[0].Init(0);
     Frogs[1].Init(1);
-
-//    float Angle=70.0f*3.141592653/180;
-//    float vx=cos(Angle)*7.0f;
-//    float vy=sin(Angle)*7.0f;
-//    float x=10.0f,y=10.0f;
-//    float oldx=x,oldy=y;
-//    Gravity=-0.5f;
-//    for (int i=0;i<20;i++){
-//    	x+=vx;
-//    	y+=vy;
-//    	if ((x-oldx)*(x-oldx)+(y-oldy)*(y-oldy)>=90.0f){
-//    		oldx=x;
-//    		oldy=y;
-//    		Angle=atan2(vy,vx)*180/3.141592653f;
-//    		Lines.push_back(c_Line(0,x,y,Angle));
-//		}
-//    	vy+=Gravity;
-//	}
 }
 
 void Init_Game() {
     Load_Texture_Swap(&Img_Background, "Images/Background.png");
+    Load_Texture_Swap(&Img_Ground, "Images/Ground.png");
     c_Line::Load_Image();
     c_Cloud::Load_Image();
     c_Platformer::Load_Image();

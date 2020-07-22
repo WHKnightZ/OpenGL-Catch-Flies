@@ -25,7 +25,7 @@
 #define START_Y 0
 #define CELL_SIZE 8
 #define MAX_X 30
-#define MAX_Y 16
+#define MAX_Y 24
 
 #define CLOUD_COUNT 3
 #define PLATFORMER_COUNT 6
@@ -34,10 +34,11 @@
 
 #define INTERVAL 15
 
+#define PI 3.141592
 #define RAD 57.295780
 
 int POS_X, POS_Y;
-float BOUNDARY_LEFT = 10.0f, BOUNDARY_RIGHT = 230.0f, BOUNDARY_TOP = 120.0f;
+float BOUNDARY_LEFT = 10.0f, BOUNDARY_RIGHT = 230.0f;
 
 int Game_State;
 
@@ -45,10 +46,10 @@ enum GAME_STATE {
     GAME_PLAY
 };
 
-Image Img_Background;
-Rect Rct_Background = {0, WIDTH / SCALE, 0, HEIGHT / SCALE};
+Image Img_Background, Img_Ground;
+Rect Rct_Background = {0, 240, 16, 128}, Rct_Ground={0,240,0,16};
 
-float Gravity = -0.6f;
+float Gravity = -0.4f;
 
 int Map[MAX_Y][MAX_X];
 
@@ -177,6 +178,8 @@ c_Platformer Platformers[PLATFORMER_COUNT];
 class c_Frog {
 public:
     static Image Img_Save[2][2][2]; // Player color, Direction, Animation
+    static float Map_Offset[2];
+    static float Map_Base_Angle[2];
 
     float x, y, vx, vy;
     Rect Rct;
@@ -219,23 +222,17 @@ public:
 
     void Prepare_Start() {
         Prepare_Stt = 1;
-        Angle = 20.0f;
-        Angle_Drt = 1;
+        Angle_Drt = Map_Offset[Drt];
+    	Angle=Map_Base_Angle[Drt];
     }
 
     void Prepare_End() {
         Prepare_Stt = 2;
     }
 
-    void Jump(float _vx, float _vy) {
+    void Jump() {
         if (!Is_Jumping) {
-            if (Drt == 0)
-                _vx = -4.0f;
-            else
-                _vx = 4.0f;
             Is_Jumping = true;
-            vx = _vx;
-            vy = _vy;
             Anim = 1;
             Update_Image();
         }
@@ -244,27 +241,49 @@ public:
     void Update() {
         if (!Is_Jumping) {
             if (Prepare_Stt > 0) {
-
-                float Angle2 = Angle;
-                vx = cos(Angle2) * 7;
-                vy = sin(Angle2) * 7;
-                for (int i = 0; i < 17; i++) {
-                    x += vx;
-                    y += vy;
-                    if (i % 3 == 1) {
-                        Angle2 = atan2(vy, vx) * RAD;
-                        Lines.push_back(c_Line(0, x, y, Angle2));
-                        Lines.push_back(c_Line(1, 240 - x, y, 180 - Angle2));
-                    }
-                    vy += Gravity;
-                }
+            	if (Prepare_Stt==2){
+            		Prepare_Stt=0;
+            		Jump();
+				}else{
+					Angle+=Angle_Drt;
+					bool Check=false;
+					if (Angle_Drt==1){
+						if (Drt==0){
+							if (Angle>=160.0f)
+								Check=true;
+						}else if (Angle>=70.0f)
+							Check=true;
+					}else{
+						if (Drt==0){
+							if (Angle<=110.0f)
+								Check=true;
+						}else if (Angle<=20.0f)
+							Check=true;
+					}
+					if (Check) Angle_Drt=-Angle_Drt;
+					
+	                float Angle2 = Angle/RAD;
+	                float x2=x,y2=y,vx2,vy2;
+	                vx2 = cos(Angle2) * 3 + (Drt==0?(PI-Angle2)*-2:Angle2*2);
+	                vy2 = sin(Angle2) * 7;
+	                vx=vx2;
+	                vy=vy2;
+	                for (int i = 0; i < 17; i++) {
+	                    x2 += vx2;
+	                    y2 += vy2;
+	                    if (i % 3 == 1) {
+	                        Angle2 = atan2(vy2, vx2) * RAD;
+	                        Lines.push_back(c_Line(Player, x2, y2,Angle2));
+	                    }
+	                    vy2 += Gravity;
+	                }
+	            }
             }
         } else {
-            vy += Gravity;
             x += vx;
             y += vy;
-            if (y >= BOUNDARY_TOP)
-                vy = 0.0f;
+            printf("%f\n",vy);
+            vy += Gravity;
             if (vy <= 0.0f) {
                 int col1 = (x - START_X - 3.0f) / CELL_SIZE;
                 int col2 = (x - START_X + 3.0f) / CELL_SIZE;
@@ -315,6 +334,8 @@ public:
 };
 
 Image c_Frog::Img_Save[2][2][2];
+float c_Frog::Map_Offset[2]={-1.0f,1.0f};
+float c_Frog::Map_Base_Angle[2]={160.0f,20.0f};
 
 c_Frog Frogs[2];
 
@@ -328,7 +349,8 @@ public:
 void Game_Display_Play();
 void Game_Process_Play();
 void Game_Keyboard_None(GLubyte &key);
-void Game_Keyboard_Play(GLubyte &key);
+void Game_Keyboard_Down_Play(GLubyte &key);
+void Game_Keyboard_Up_Play(GLubyte &key);
 void Game_Special_None(int &key);
 void Game_Special_Play(int &key);
 
@@ -336,7 +358,8 @@ void Game_Special_Play(int &key);
 
 void (*Game_Display_Func[])() = {Game_Display_Play};
 void (*Game_Process_Func[])() = {Game_Process_Play};
-void (*Game_Keyboard_Func[])(GLubyte &key) = {Game_Keyboard_Play};
+void (*Game_Keyboard_Down_Func[])(GLubyte &key) = {Game_Keyboard_Down_Play};
+void (*Game_Keyboard_Up_Func[])(GLubyte &key) = {Game_Keyboard_Up_Play};
 void (*Game_Special_Func[])(int &key) = {Game_Special_Play};
 
 // including all referenced .cpp files, you don't need to compile all of them
