@@ -23,14 +23,14 @@
 
 #define START_X 0
 #define START_Y 0
-#define CELL_SIZE 8
+#define CELL_SIZE 24
 #define MAX_X 30
 #define MAX_Y 24
 
 #define CLOUD_COUNT 3
 #define PLATFORMER_COUNT 6
 
-#define SCALE 3.0f
+#define SCALE 3
 
 #define INTERVAL 15
 
@@ -38,7 +38,7 @@
 #define RAD 57.295780
 
 int POS_X, POS_Y;
-float BOUNDARY_LEFT = 10.0f, BOUNDARY_RIGHT = 230.0f;
+float BOUNDARY_LEFT = 30.0f, BOUNDARY_RIGHT = 690.0f;
 
 int Game_State;
 
@@ -47,9 +47,9 @@ enum GAME_STATE {
 };
 
 Image Img_Background, Img_Ground;
-Rect Rct_Background = {0, 240, 16, 128}, Rct_Ground={0,240,0,16};
+Rect Rct_Background = {0, WIDTH, 48, 384}, Rct_Ground = {0, WIDTH, 0, 48};
 
-float Gravity = -0.4f;
+float Gravity = -1.2f;
 
 int Map[MAX_Y][MAX_X];
 
@@ -83,14 +83,14 @@ public:
         Load_Texture(&Img, "Images/Line.png");
         Crop_Image(&Img, &Img_Save[0], 0, 0, 8, 4);
         Crop_Image(&Img, &Img_Save[1], 0, 4, 8, 4);
-        Swap_Image(Img_Save[0].img, 8, 4);
-        Swap_Image(Img_Save[0].img, 8, 4);
+        Zoom_Image(&Img_Save[0], SCALE);
+        Zoom_Image(&Img_Save[1], SCALE);
         Delete_Image(&Img);
 
-        Rct.Left = -4.0f;
-        Rct.Right = 4.0f;
-        Rct.Bottom = -2.0f;
-        Rct.Top = 2.0f;
+        Rct.Left = -12.0f;
+        Rct.Right = 12.0f;
+        Rct.Bottom = -8.0f;
+        Rct.Top = 8.0f;
     }
 };
 
@@ -128,14 +128,15 @@ public:
     }
 
     void Update() {
-        x -= 0.1f;
-        if (x < -40.0f)
-            x += 360.0f;
+        x -= 0.3f;
+        if (x < -120.0f)
+            x += 1080.0f;
         Update_Rect();
     }
 
     static void Load_Image() {
         Load_Texture_Swap(&Img_Save, "Images/Cloud.png");
+        Zoom_Image(&Img_Save, SCALE);
     }
 };
 
@@ -168,6 +169,7 @@ public:
 
     static void Load_Image() {
         Load_Texture_Swap(&Img_Save, "Images/Platformer.png");
+        Zoom_Image(&Img_Save, SCALE);
     }
 };
 
@@ -191,12 +193,15 @@ public:
     float Angle;
     int Angle_Drt;
 
+    static bool (*Check_Boundary[2])(float x);
+    static bool (*Check_Angle[2][2])(float Angle);
+
     void Init(int _Player) {
         Player = _Player;
         Drt = 1 - Player;
         Anim = 0;
         float Offset = 11.0f * CELL_SIZE * (Player == 0 ? -1 : 1);
-        x = WIDTH / SCALE / 2 + Offset;
+        x = WIDTH / 2 + Offset;
         y = CELL_SIZE * 2.0f;
         Prepare_Stt = 0;
         Is_Jumping = false;
@@ -222,8 +227,8 @@ public:
 
     void Prepare_Start() {
         Prepare_Stt = 1;
-        Angle_Drt = Map_Offset[Drt];
-    	Angle=Map_Base_Angle[Drt];
+        Angle_Drt = Drt;
+        Angle = Map_Base_Angle[Drt];
     }
 
     void Prepare_End() {
@@ -241,54 +246,47 @@ public:
     void Update() {
         if (!Is_Jumping) {
             if (Prepare_Stt > 0) {
-            	if (Prepare_Stt==2){
-            		Prepare_Stt=0;
-            		Jump();
-				}else{
-					Angle+=Angle_Drt;
-					bool Check=false;
-					if (Angle_Drt==1){
-						if (Drt==0){
-							if (Angle>=160.0f)
-								Check=true;
-						}else if (Angle>=70.0f)
-							Check=true;
-					}else{
-						if (Drt==0){
-							if (Angle<=110.0f)
-								Check=true;
-						}else if (Angle<=20.0f)
-							Check=true;
-					}
-					if (Check) Angle_Drt=-Angle_Drt;
-					
-	                float Angle2 = Angle/RAD;
-	                float x2=x,y2=y,vx2,vy2;
-	                vx2 = cos(Angle2) * 3 + (Drt==0?(PI-Angle2)*-2:Angle2*2);
-	                vy2 = sin(Angle2) * 7;
-	                vx=vx2;
-	                vy=vy2;
-	                for (int i = 0; i < 17; i++) {
-	                    x2 += vx2;
-	                    y2 += vy2;
-	                    if (i % 3 == 1) {
-	                        Angle2 = atan2(vy2, vx2) * RAD;
-	                        Lines.push_back(c_Line(Player, x2, y2,Angle2));
-	                    }
-	                    vy2 += Gravity;
-	                }
-	            }
+                if (Prepare_Stt == 2) {
+                    Prepare_Stt = 0;
+                    Jump();
+                } else {
+                    Angle += Map_Offset[Angle_Drt];
+                    if (Check_Angle[Drt][Angle_Drt](Angle))
+                        Angle_Drt = 1 - Angle_Drt;
+
+                    float Angle2 = Angle / RAD;
+                    float x2 = x, y2 = y + 4.0f, vx2, vy2;
+                    vx2 = cos(Angle2) * 4 + (Drt == 0 ? Angle2 - PI : Angle2) * 9;
+                    vy2 = sin(Angle2) * 21;
+                    vx = vx2;
+                    vy = vy2;
+                    for (int i = 0; i < 18; i++) {
+                        x2 += vx2;
+                        y2 += vy2;
+                        if (i % 3 == 2) {
+                            Angle2 = atan2(vy2, vx2) * RAD;
+                            Lines.push_back(c_Line(Player, x2, y2, Angle2));
+                        }
+                        vy2 += Gravity;
+                    }
+                }
             }
         } else {
+            float y_old = y;
             x += vx;
             y += vy;
-            printf("%f\n",vy);
             vy += Gravity;
+
+            if (vy < -24.0f)
+                vy = -24.0f;
+
             if (vy <= 0.0f) {
-                int col1 = (x - START_X - 3.0f) / CELL_SIZE;
-                int col2 = (x - START_X + 3.0f) / CELL_SIZE;
-                int row = (y - START_Y - 5.0f) / CELL_SIZE;
-                if (Map[row][col1] || Map[row][col2]) {
+                int col1 = (x - START_X - 9.0f) / CELL_SIZE;
+                int col2 = (x - START_X + 9.0f) / CELL_SIZE;
+                int row_old = (y_old - START_Y) / CELL_SIZE;
+                int row = (y - START_Y) / CELL_SIZE;
+                if ((!Map[row_old][col1] && !Map[row_old][col2])
+                        && (Map[row][col1] || Map[row][col2])) {
                     Is_Jumping = false;
                     y = (row + 1) * CELL_SIZE + START_Y;
                     vx = 0.0f;
@@ -297,21 +295,37 @@ public:
                     Update_Image();
                 }
             }
-            if (Drt == 0) {
-                if (x < BOUNDARY_LEFT) {
-                    Drt = 1;
-                    vx = -vx;
-                    Update_Image();
-                }
-            } else {
-                if (x > BOUNDARY_RIGHT) {
-                    Drt = 0;
-                    vx = -vx;
-                    Update_Image();
-                }
+            if (Check_Boundary[Drt](x)) {
+                Drt = 1 - Drt;
+                vx = -vx;
+                Update_Image();
             }
             Update_Rect();
         }
+    }
+
+    static bool Check_Boundary_Left(float x) {
+        return x < BOUNDARY_LEFT;
+    }
+
+    static bool Check_Boundary_Right(float x) {
+        return x > BOUNDARY_RIGHT;
+    }
+
+    static bool Check_Angle_Left_Decrease(float Angle) {
+        return Angle <= 110.0f;
+    }
+
+    static bool Check_Angle_Left_Increase(float Angle) {
+        return Angle >= 160.0f;
+    }
+
+    static bool Check_Angle_Right_Decrease(float Angle) {
+        return Angle <= 20.0f;
+    }
+
+    static bool Check_Angle_Right_Increase(float Angle) {
+        return Angle >= 70.0f;
     }
 
     static void Load_Image() {
@@ -325,6 +339,10 @@ public:
         Swap_Image(Img_Save[0][1][1].img, 18, 16);
         Swap_Image(Img_Save[1][1][0].img, 18, 16);
         Swap_Image(Img_Save[1][1][1].img, 18, 16);
+        Zoom_Image(&Img_Save[0][1][0], SCALE);
+        Zoom_Image(&Img_Save[0][1][1], SCALE);
+        Zoom_Image(&Img_Save[1][1][0], SCALE);
+        Zoom_Image(&Img_Save[1][1][1], SCALE);
         Flip_Horizontal(&Img_Save[0][1][0], &Img_Save[0][0][0]);
         Flip_Horizontal(&Img_Save[0][1][1], &Img_Save[0][0][1]);
         Flip_Horizontal(&Img_Save[1][1][0], &Img_Save[1][0][0]);
@@ -334,14 +352,37 @@ public:
 };
 
 Image c_Frog::Img_Save[2][2][2];
-float c_Frog::Map_Offset[2]={-1.0f,1.0f};
-float c_Frog::Map_Base_Angle[2]={160.0f,20.0f};
+float c_Frog::Map_Offset[2] = {-1.0f, 1.0f};
+float c_Frog::Map_Base_Angle[2] = {160.0f, 20.0f};
+bool (*c_Frog::Check_Boundary[2])(float x) = {c_Frog::Check_Boundary_Left, c_Frog::Check_Boundary_Right};
+bool (*c_Frog::Check_Angle[2][2])(float Angle) = {
+    {Check_Angle_Left_Decrease, Check_Angle_Left_Increase},
+    {Check_Angle_Right_Decrease, Check_Angle_Right_Increase}
+};
 
 c_Frog Frogs[2];
 
+class c_Particle {
+public:
+    static Image Img_Save;
+};
+
+Image c_Particle::Img_Save;
+
 class c_Fly {
 public:
+    static Image Img_Save[2];
+
+    static void Load_Image() {
+        Image Img;
+        Load_Texture(&Img, "Images/Fly.png");
+        Crop_Image(&Img, &Img_Save[0], 0, 0, 10, 6);
+        Crop_Image(&Img, &Img_Save[1], 0, 6, 10, 6);
+        Crop_Image(&Img, &c_Particle::Img_Save, 0, 12, 4, 4);
+    }
 };
+
+Image c_Fly::Img_Save[2];
 
 // Prototype
 

@@ -13,7 +13,7 @@ void Game_Display_Play() {
 
     for (c_Line Line : Lines)
         Line.Draw();
-        
+
     Map_Texture(&Img_Ground);
     Draw_Rect(&Rct_Ground);
 
@@ -40,21 +40,29 @@ void Game_Process_Play() {
 // Keyboard
 
 void Game_Keyboard_None(GLubyte &key) {
-	
+
 }
 
 void Game_Keyboard_Down_Play(GLubyte &key) {
-    switch(key){
-    	case 32: Frogs[0].Prepare_Start(); break;
-    	case 13: Frogs[1].Prepare_Start(); break;
-	}
+    switch(key) {
+    case 32:
+        Frogs[0].Prepare_Start();
+        break;
+    case 13:
+        Frogs[1].Prepare_Start();
+        break;
+    }
 }
 
 void Game_Keyboard_Up_Play(GLubyte &key) {
-    switch(key){
-    	case 32: Frogs[0].Prepare_End(); break;
-    	case 13: Frogs[1].Prepare_End(); break;
-	}
+    switch(key) {
+    case 32:
+        Frogs[0].Prepare_End();
+        break;
+    case 13:
+        Frogs[1].Prepare_End();
+        break;
+    }
 }
 
 // Special
