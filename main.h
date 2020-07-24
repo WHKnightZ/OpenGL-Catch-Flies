@@ -49,6 +49,8 @@ enum GAME_STATE {
 Image Img_Background, Img_Ground;
 Rect Rct_Background = {0, WIDTH, 48, 384}, Rct_Ground = {0, WIDTH, 0, 48};
 
+float Color_White[]={1.0f,1.0f,1.0f};
+
 float Gravity = -1.2f;
 
 int Map[MAX_Y][MAX_X];
@@ -190,6 +192,7 @@ public:
     int Drt, Anim;
     int Prepare_Stt;
     bool Is_Jumping;
+    bool Is_Jump_Pressed;
     float Angle;
     int Angle_Drt;
 
@@ -205,6 +208,7 @@ public:
         y = CELL_SIZE * 2.0f;
         Prepare_Stt = 0;
         Is_Jumping = false;
+        Is_Jump_Pressed=false;
         Update_Image();
         Update_Rect();
     }
@@ -225,14 +229,25 @@ public:
         Draw_Rect(&Rct);
     }
 
+	void Key_Down(){
+		Is_Jump_Pressed=true;
+	}
+	
+	void Key_Up(){
+		Is_Jump_Pressed=false;
+	}
+	
     void Prepare_Start() {
-        Prepare_Stt = 1;
-        Angle_Drt = Drt;
-        Angle = Map_Base_Angle[Drt];
+    	if (Prepare_Stt==0){
+	        Prepare_Stt = 1;
+	        Angle_Drt = Drt;
+	        Angle = Map_Base_Angle[Drt];
+	    }
     }
 
     void Prepare_End() {
-        Prepare_Stt = 2;
+    	if (Prepare_Stt==1)
+        	Prepare_Stt = 2;
     }
 
     void Jump() {
@@ -244,6 +259,13 @@ public:
     }
 
     void Update() {
+    	if (!Is_Jumping){
+    		if (Is_Jump_Pressed)
+    			Prepare_Start();
+    		else
+    			Prepare_End();
+		}
+		
         if (!Is_Jumping) {
             if (Prepare_Stt > 0) {
                 if (Prepare_Stt == 2) {
@@ -365,9 +387,57 @@ c_Frog Frogs[2];
 class c_Particle {
 public:
     static Image Img_Save;
+    
+    Rect Rct;
+    Image *Img;
+    
+    float x, y,vx,vy, Opacity;
+    
+    c_Particle(float _x, float _y, float Angle){
+    	x=_x;
+    	y=_y;
+    	Angle/=RAD;
+    	vx=cos(Angle)*8.0f;
+    	vy=sin(Angle)*8.0f;
+    	printf("%f %f\n",vx,vy);
+    	Opacity=1.0f;
+    	Img=&Img_Save;
+    	Update_Rect();
+	}
+	
+	void Update_Rect() {
+        Rct.Left = x - Img->w / 2;
+        Rct.Right = Rct.Left + Img->w;
+        Rct.Bottom = y;
+        Rct.Top = Rct.Bottom + Img->h;
+    }
+
+    void Draw() {
+    	glColor4f(1.0f,1.0f,1.0f,Opacity);
+        Map_Texture(Img);
+        Draw_Rect(&Rct);
+        glColor3fv(Color_White);
+    }
+    
+    bool Update(){
+    	Opacity-=0.05f;
+    	if (Opacity<0.0f)
+    		return false;
+    		
+    	printf("%f ",x);
+    	x+=vx;
+    	y+=vy;
+    	
+    	printf("%f ",x);
+    	Update_Rect();
+    	return true;
+	}
+	
 };
 
 Image c_Particle::Img_Save;
+
+std::vector<c_Particle> Particles;
 
 class c_Fly {
 public:
@@ -379,6 +449,9 @@ public:
         Crop_Image(&Img, &Img_Save[0], 0, 0, 10, 6);
         Crop_Image(&Img, &Img_Save[1], 0, 6, 10, 6);
         Crop_Image(&Img, &c_Particle::Img_Save, 0, 12, 4, 4);
+        Zoom_Image(&Img_Save[0], SCALE);
+        Zoom_Image(&Img_Save[1], SCALE);
+        Zoom_Image(&c_Particle::Img_Save, SCALE);
     }
 };
 
