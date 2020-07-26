@@ -29,6 +29,7 @@ v0.1
 
 ### Game:
 
+![Image](https://github.com/WHKnightZ/OpenGL-Catch-Flies/blob/master/Catch_Flies.png)
 
 ## Youtube:
 

@@ -13,12 +13,6 @@
 
 #include "../Library/gl_texture.h"
 
-/*
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
-*/
-
 #define WIDTH 880
 #define HEIGHT 464
 
@@ -39,6 +33,7 @@
 #define RAD 57.295780
 
 int POS_X, POS_Y;
+
 float BOUNDARY_LEFT = START_X + 30.0f, BOUNDARY_RIGHT = START_X + 690.0f;
 
 int Game_State;
@@ -48,6 +43,7 @@ enum GAME_STATE { GAME_PLAY };
 float Color_Left_Right[][3] = {{0.600f, 0.819f, 0.945f},
                                {0.345f, 0.561f, 0.698f}},
       Color_Bottom[] = {0.267f, 0.267f, 0.267f};
+
 Rect Rct_Left = {0, START_X - 6.0f, START_Y, HEIGHT},
      Rct_White_Left = {START_X - 6.0f, START_X, START_Y, HEIGHT},
      Rct_Right = {WIDTH - START_X + 6.0f, WIDTH, START_Y, HEIGHT},
@@ -59,6 +55,7 @@ Rect Rct_Left = {0, START_X - 6.0f, START_Y, HEIGHT},
 Image Img_Numbers[10];
 
 Image Img_Background, Img_Ground;
+
 Rect Rct_Background = {START_X, 720 + START_X, 48 + START_Y, 384 + START_Y},
      Rct_Ground = {START_X, 720 + START_X, START_Y, 48 + START_Y};
 
