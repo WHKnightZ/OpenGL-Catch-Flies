@@ -19,16 +19,14 @@ void Keyboard_Up(GLubyte key, int x, int y) {
     Game_Keyboard_Up_Func[Game_State](key);
 }
 
-void Special(int key, int x, int y) {
-    Game_Special_Func[Game_State](key);
-}
-
 void Timer(int value) {
     Game_Process_Func[Game_State]();
     glutTimerFunc(INTERVAL, Timer, 0);
 }
 
 int main(int argc, char **argv) {
+    srand(time(NULL));
+
     Init_Game();
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
@@ -41,7 +39,6 @@ int main(int argc, char **argv) {
     glutDisplayFunc(Display);
     glutKeyboardFunc(Keyboard_Down);
     glutKeyboardUpFunc(Keyboard_Up);
-    glutSpecialFunc(Special);
     glutTimerFunc(0, Timer, 0);
     glutMainLoop();
     return 0;

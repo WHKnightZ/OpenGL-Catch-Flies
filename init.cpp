@@ -1,26 +1,22 @@
 #include "main.h"
 
 void Reload_Game() {
-    for (int i = 0; i < 2; i++)
-        for (int j = 0; j < MAX_X; j++)
-            Map[i][j] = 1;
-    for (int i = 2; i < MAX_Y; i++)
-        for (int j = 0; j < MAX_X; j++)
-            Map[i][j] = 0;
-
     Clouds[0].Init(570.0f, 210.0f);
     Clouds[1].Init(930.0f, 300.0f);
     Clouds[2].Init(240.0f, 255.0f);
 
-    Platformers[0].Init(7, 5);
-    Platformers[1].Init(19, 5);
-    Platformers[2].Init(5, 9);
-    Platformers[3].Init(21, 9);
-    Platformers[4].Init(9, 13);
-    Platformers[5].Init(17, 13);
-
     Frogs[0].Init(0);
     Frogs[1].Init(1);
+}
+
+void Init_Numbers() {
+    Image Img;
+    Load_Texture_Swap(&Img, "Images/Numbers.png");
+    for (int i = 0; i < 10; i++) {
+        Crop_Image(&Img, &Img_Numbers[i], i * 6, 0, 6, 7);
+        Zoom_Image(&Img_Numbers[i], SCALE * 2);
+    }
+    Delete_Image(&Img);
 }
 
 void Init_Game() {
@@ -28,12 +24,28 @@ void Init_Game() {
     Zoom_Image(&Img_Background, SCALE);
     Load_Texture_Swap(&Img_Ground, "Images/Ground.png");
     Zoom_Image(&Img_Ground, SCALE);
-    
+
     c_Line::Load_Image();
     c_Cloud::Load_Image();
     c_Platformer::Load_Image();
     c_Frog::Load_Image();
     c_Fly::Load_Image();
+
+    for (int i = 0; i < 2; i++)
+        for (int j = 0; j < MAX_X; j++)
+            Map[i][j] = 1;
+    for (int i = 2; i < MAX_Y; i++)
+        for (int j = 0; j < MAX_X; j++)
+            Map[i][j] = 0;
+
+    Platformers[0].Init(7, 5);
+    Platformers[1].Init(19, 5);
+    Platformers[2].Init(4, 9);
+    Platformers[3].Init(22, 9);
+    Platformers[4].Init(9, 13);
+    Platformers[5].Init(17, 13);
+
+    Init_Numbers();
 
     Reload_Game();
 }
