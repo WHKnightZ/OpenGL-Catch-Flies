@@ -1,5 +1,4 @@
 #include <math.h>
-#include <time.h>
 #include <GL/glut.h>
 #include <vector>
 #include "../Library/loadpng.h"
