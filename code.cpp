@@ -46,10 +46,12 @@ void Timer(int value) {
 	glutPostRedisplay();
 	glutTimerFunc(INTERVAL, Timer, 0);
 }
-glutTimerFunc(0, Timer, 0);
+	glutTimerFunc(0, Timer, 0);
 	printf("Hello");
 float Color_Left_Right[][3] = {{0.600f, 0.819f, 0.945f}, {0.345f, 0.561f, 0.698f}},
 	  Color_Bottom[] = {0.267f, 0.267f, 0.267f};
+#define START_X 80
+#define START_Y 80
 Rect Rct_Left = {0, START_X - 6.0f, START_Y, HEIGHT},
 	 Rct_White_Left = {START_X - 6.0f, START_X, START_Y, HEIGHT},
 	 Rct_Right = {WIDTH - START_X + 6.0f, WIDTH, START_Y, HEIGHT},
@@ -107,6 +109,9 @@ void Draw_Frame() {
 	glEnable(GL_TEXTURE_2D);
 }
 	Draw_Frame();
+#define CELL_SIZE 24
+#define MAX_X 30
+#define MAX_Y 24
 int Map[MAX_Y][MAX_X];
 	for (int i = 0; i < 2; i++)
 		for (int j = 0; j < MAX_X; j++)
@@ -119,10 +124,12 @@ class c_Platformer {
 	static Image Img_Save;
 	static void Load_Image() {
 		Load_Texture_Swap(&Img_Save, "Images/Platformer.png");
-		Zoom_Image(&Img_Save, SCALE);
 	}
 };
 Image c_Platformer::Img_Save;
+	c_Platformer::Load_Image();
+#define SCALE 3
+		Zoom_Image(&Img_Save, SCALE);
 	Rect Rct;
 	Image *Img;
 	void Init(int _x, int _y) {
@@ -158,6 +165,7 @@ class c_Cloud {
 	}
 };
 Image c_Cloud::Img_Save;
+	c_Cloud::Load_Image();
 	Rect Rct;
 	Image *Img;
 	float x, y;
@@ -185,6 +193,9 @@ Image c_Cloud::Img_Save;
 	}
 #define CLOUD_COUNT 3
 c_Cloud Clouds[CLOUD_COUNT];
+	Clouds[0].Init(570.0f, 210.0f);
+	Clouds[1].Init(930.0f, 300.0f);
+	Clouds[2].Init(240.0f, 255.0f);
 	for (int i = 0; i < CLOUD_COUNT; i++)
 		Clouds[i].Draw();
 	for (int i = 0; i < CLOUD_COUNT; i++)
@@ -266,6 +277,11 @@ Image c_Frog::Img_Save[2][2][2], c_Frog::Img_Button_Save[2], c_Frog::Img_Button_
 float c_Frog::Map_Offset[2] = {-1.0f, 1.0f};
 float c_Frog::Map_Base_Angle[2] = {160.0f, 20.0f};
 c_Frog Frogs[2];
+	c_Frog::Load_Image();
+	Frogs[0].Init(0);
+	Frogs[1].Init(1);
+	Frogs[0].Draw();
+	Frogs[1].Draw();
 float Gravity = -1.2f;
 void Keyboard_Down(GLubyte key, int x, int y) {
 	switch (key) {
@@ -300,7 +316,6 @@ printf("Up");
 			x += vx;
 			y += vy;
 			vy += Gravity;
-
 			if (vy < -24.0f)
 				vy = -24.0f;
 			if (vy <= 0.0f) {
@@ -320,3 +335,268 @@ printf("Up");
 			}
 		}
 	}
+	Frogs[0].Update();
+	Frogs[1].Update();
+	void Key_Down() {
+		Is_Jump_Pressed = true;
+	}
+	void Key_Up() {
+		Is_Jump_Pressed = false;
+	}
+		Frogs[0].Key_Down();
+		Frogs[1].Key_Down();
+		Frogs[0].Key_Up();
+		Frogs[1].Key_Up();
+		vx = 7.0f;
+		vy = 7.0f;
+		Jump();
+float BOUNDARY_LEFT = START_X + 30.0f, BOUNDARY_RIGHT = START_X + 690.0f;
+	static bool Check_Boundary_Left(float x) { return x < BOUNDARY_LEFT; }
+	static bool Check_Boundary_Right(float x) { return x > BOUNDARY_RIGHT; }
+	static bool (*Check_Boundary[2])(float x);
+bool (*c_Frog::Check_Boundary[2])(float x) = {c_Frog::Check_Boundary_Left, c_Frog::Check_Boundary_Right};
+			if (Check_Boundary[Drt](x)) {
+				Drt = 1 - Drt;
+				vx = -vx;
+				Update_Image();
+			}
+class c_Line {
+  public:
+	static Image Img_Save[2];
+	static Rect Rct;
+	Image *Img;
+	float x, y, Angle;
+	int Player;
+	c_Line(int _Player, float _x, float _y, float _Angle) {
+		Player = _Player;
+		x = _x;
+		y = _y;
+		Angle = _Angle;
+		Img = &Img_Save[Player];
+	}
+	void Draw() {
+		glTranslatef(x, y, 0.0f);
+		glRotatef(Angle, 0.0f, 0.0f, 1.0f);
+		Map_Texture(Img);
+		Draw_Rect(&Rct);
+		glLoadIdentity();
+	}
+	static void Load_Image() {
+		Image Img;
+		Load_Texture(&Img, "Images/Lines.png");
+		Crop_Image(&Img, &Img_Save[0], 0, 0, 8, 4);
+		Crop_Image(&Img, &Img_Save[1], 0, 4, 8, 4);
+		Zoom_Image(&Img_Save[0], SCALE);
+		Zoom_Image(&Img_Save[1], SCALE);
+		Delete_Image(&Img);
+		Rct.Left = -12.0f;
+		Rct.Right = 12.0f;
+		Rct.Bottom = -8.0f;
+		Rct.Top = 8.0f;
+	}
+};
+Image c_Line::Img_Save[2];
+Rect c_Line::Rct;
+std::vector<c_Line> Lines;
+c_Line Line(100.0f, 100.0f, 45.0f);
+	c_Line::Load_Image();
+	Line.Draw();
+	void Prepare_Start() {
+		if (Prepare_Stt == 0) {
+			Prepare_Stt = 1;
+			Angle_Drt = Drt;
+			Angle = Map_Base_Angle[Drt];
+		}
+	}
+	void Prepare_End() {
+		if (Prepare_Stt == 1)
+			Prepare_Stt = 2;
+	}
+	static bool Check_Angle_Left_Decrease(float Angle) {
+		return Angle <= 110.0f;
+	}
+	static bool Check_Angle_Left_Increase(float Angle) {
+		return Angle >= 160.0f;
+	}
+	static bool Check_Angle_Right_Decrease(float Angle) {
+		return Angle <= 20.0f;
+	}
+	static bool Check_Angle_Right_Increase(float Angle) {
+		return Angle >= 70.0f;
+	}
+	static bool (*Check_Angle[2][2])(float Angle);
+bool (*c_Frog::Check_Angle[2][2])(float Angle) = {
+	{Check_Angle_Left_Decrease, Check_Angle_Left_Increase},
+	{Check_Angle_Right_Decrease, Check_Angle_Right_Increase}};
+#define PI 3.141592
+#define RAD 57.295780
+		if (!Is_Jumping) {
+			if (Is_Jump_Pressed)
+				Prepare_Start();
+			else
+				Prepare_End();
+			if (Prepare_Stt > 0) {
+				if (Prepare_Stt == 2) {
+					Prepare_Stt = 0;
+					Jump();
+				} else {
+					Angle += Map_Offset[Angle_Drt];
+					if (Check_Angle[Drt][Angle_Drt](Angle))
+						Angle_Drt = 1 - Angle_Drt;
+
+					float Angle2 = Angle / RAD;
+					float x2 = x, y2 = y + 4.0f, vx2, vy2;
+					vx2 = cos(Angle2) * 4 + (Drt == 0 ? Angle2 - PI : Angle2) * 9;
+					vy2 = sin(Angle2) * 21;
+					vx = vx2;
+					vy = vy2;
+					for (int i = 0; i < 18; i++) {
+						x2 += vx2;
+						y2 += vy2;
+						if (i % 3 == 2) {
+							Angle2 = atan2(vy2, vx2) * RAD;
+							Lines.push_back(c_Line(Player, x2, y2, Angle2));
+						}
+						vy2 += Gravity;
+					}
+				}
+			}
+		} else {
+		}
+	Lines.clear();
+class c_Fly {
+  public:
+	static Image Img_Save[2];
+	static float ax_Base, ay_Base;
+	static float vx_Max, vy_Max;
+	static void Load_Image() {
+		Image Img;
+		Load_Texture(&Img, "Images/Fly.png");
+		Crop_Image(&Img, &Img_Save[0], 0, 0, 10, 6);
+		Crop_Image(&Img, &Img_Save[1], 0, 6, 10, 6);
+		Swap_Image(Img_Save[0].img, 10, 6);
+		Swap_Image(Img_Save[1].img, 10, 6);
+		Zoom_Image(&Img_Save[0], SCALE);
+		Zoom_Image(&Img_Save[1], SCALE);
+	}
+	Rect Rct;
+	Image *Img;
+	float x, y, vx, vy, ax, ay, Scale;
+	int Timer, Anim, Region;
+	bool Is_Alive;
+	c_Fly(float _x, float _y, int _Region) {
+		x = _x + rand() % 41 - 20 + START_X;
+		y = _y + rand() % 41 - 20 + START_Y;
+		vx = vx_Max;
+		vy = 0.0f;
+		ax = ax_Base;
+		ay = ay_Base;
+		Region = _Region;
+		Timer = 0;
+		Anim = 0;
+		Scale = 0.0f;
+		Is_Alive = false;
+		Img = &Img_Save[0];
+	}
+	void Update_Rect() {
+		Rct.Left = x - Img->w / 2 * Scale;
+		Rct.Right = Rct.Left + Img->w * Scale;
+		Rct.Bottom = y - Img->h / 2 * Scale;
+		Rct.Top = Rct.Bottom + Img->h * Scale;
+	}
+	void Draw() {
+		Map_Texture(Img);
+		Draw_Rect(&Rct);
+	}
+	void Update() {
+		if (!Is_Alive) {
+			Scale += 0.05f;
+			if (Scale >= 1.0f) {
+				Scale = 1.0f;
+				Is_Alive = true;
+			}
+		}
+		x += vx;
+		y += vy;
+		vx += ax;
+		vy += ay;
+		if (vx >= vx_Max || vx <= -vx_Max)
+			ax = vx < 0 ? ax_Base : -ax_Base;
+		if (vy >= vy_Max || vy <= -vy_Max)
+			ay = vy < 0 ? ay_Base : -ay_Base;
+		Timer++;
+		if (Timer == 6) {
+			Timer = 0;
+			Anim = 1 - Anim;
+			Img = &Img_Save[Anim];
+		}
+		Update_Rect();
+	}
+	bool Is_Catched(float _x, float _y) {
+		if (_x - 20.0f < x && _x + 20.0f > x && _y - 6.0f < y && _y + 34.0f > y)
+			return true;
+		return false;
+	}
+};
+Image c_Fly::Img_Save[2];
+float c_Fly::ax_Base = 0.015f, c_Fly::ay_Base = 0.02f;
+float c_Fly::vx_Max = 0.3f, c_Fly::vy_Max = 0.8f;
+std::vector<c_Fly> Flies;
+	c_Fly::Load_Image();
+	int Size = Flies.size();
+	for (int i = 0; i < Size; i++)
+		Flies[i].Draw();
+	int Size = Flies.size();
+	for (int i = 0; i < Size; i++)
+		Flies[i].Update();
+class c_Point {
+  public:
+	float x, y;
+	c_Point(float _x, float _y) {
+		x = _x;
+		y = _y;
+	}
+};
+class c_Spawn_Flies {
+  public:
+	c_Point Spawn_Points[6] = {
+		c_Point(100.0f, 300.0f), c_Point(620.0f, 300.0f),
+		c_Point(360.0f, 280.0f), c_Point(360.0f, 130.0f),
+		c_Point(100.0f, 120.0f), c_Point(620.0f, 120.0f)};
+	int Max_Flies, Count_Spawn_Points, Timer;
+	c_Spawn_Flies(int _Max_Flies) {
+		Max_Flies = _Max_Flies;
+		Timer = 60;
+		Count_Spawn_Points = sizeof(Spawn_Points) / sizeof(c_Point);
+	}
+	void Update() {
+		Timer++;
+		if (Timer == 90) {
+			Timer = 0;
+			if (Flies.size() < Max_Flies) {
+				bool Check;
+				int Region;
+				do {
+					Check = false;	
+					Region = rand() % Count_Spawn_Points;
+					for (c_Fly Fly : Flies)
+						if (Fly.Region == Region) {
+							Check = true;
+							break;
+						}
+				} while (Check);
+				Flies.push_back(c_Fly(Spawn_Points[Region].x, Spawn_Points[Region].y, Region));
+			}
+		}
+	}
+};
+c_Spawn_Flies Spawn_Flies(2);
+	Spawn_Flies.Update();
+			std::vector<c_Fly>::iterator it = Flies.begin();
+			while (it != Flies.end()) {
+				if (it->Is_Catched(x, y)) {
+					it = Flies.erase(it);
+					Score++;
+				} else
+					it++;
+			}
