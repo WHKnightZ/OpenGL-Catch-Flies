@@ -1,3 +1,5 @@
+sai vị trí scale, cop thư viện trước, sau đó tạo project, cài đặt, code 1 file, về sau tách ra, cuối cùng tham khảo code mình up trên github
+
 #include <math.h>
 #include <GL/glut.h>
 #include <vector>
