@@ -76,11 +76,11 @@ class c_Platformer {
 	static Image Img_Save;
 	static void Load_Image() {
 		Load_Texture_Swap(&Img_Save, "Images/Platformer.png");
+		Zoom_Image(&Img_Save, SCALE);
 	}
 };
 Image c_Platformer::Img_Save;
 	c_Platformer::Load_Image();
-		Zoom_Image(&Img_Save, SCALE);
 	Rect Rct;
 	Image *Img;
 	void Init(int _x, int _y) {
@@ -241,8 +241,8 @@ void Keyboard_Up(GLubyte key, int x, int y) {
 }
 	glutKeyboardFunc(Keyboard_Down);
 	glutKeyboardUpFunc(Keyboard_Up);
-printf("Down");
-printf("Up");
+		printf("Down");
+		printf("Up");
 	void Jump() {
 		if (!Is_Jumping) {
 			Is_Jumping = true;
@@ -273,6 +273,7 @@ printf("Up");
 					Update_Image();
 				}
 			}
+			Update_Rect();
 		}
 	}
 	Frogs[0].Update();
@@ -287,8 +288,8 @@ printf("Up");
 		Frogs[1].Key_Down();
 		Frogs[0].Key_Up();
 		Frogs[1].Key_Up();
-		vx = 7.0f;
-		vy = 7.0f;
+		vx = 10.0f;
+		vy = 10.0f;
 		Jump();
 float BOUNDARY_LEFT = 30.0f, BOUNDARY_RIGHT = 690.0f;
 	static bool Check_Boundary_Left(float x) { return x < BOUNDARY_LEFT; }
@@ -338,8 +339,10 @@ class c_Line {
 Image c_Line::Img_Save[2];
 Rect c_Line::Rct;
 std::vector<c_Line> Lines;
-c_Line Line(100.0f, 100.0f, 45.0f);
 	c_Line::Load_Image();
+    for (c_Line Line : Lines)
+        Line.Draw();
+c_Line Line(100.0f, 100.0f, 45.0f);
 	Line.Draw();
 	void Prepare_Start() {
 		if (Prepare_Stt == 0) {
@@ -383,7 +386,6 @@ bool (*c_Frog::Check_Angle[2][2])(float Angle) = {
 					Angle += Map_Offset[Angle_Drt];
 					if (Check_Angle[Drt][Angle_Drt](Angle))
 						Angle_Drt = 1 - Angle_Drt;
-
 					float Angle2 = Angle / RAD;
 					float x2 = x, y2 = y + 4.0f, vx2, vy2;
 					vx2 = cos(Angle2) * 4 + (Drt == 0 ? Angle2 - PI : Angle2) * 9;
@@ -540,3 +542,4 @@ c_Spawn_Flies Spawn_Flies(2);
 				} else
 					it++;
 			}
+
