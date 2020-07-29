@@ -47,8 +47,6 @@ void Timer(int value) {
 }
 	glutTimerFunc(0, Timer, 0);
 	printf("Hello");
-float Color_Left_Right[][3] = {{0.600f, 0.819f, 0.945f}, {0.345f, 0.561f, 0.698f}},
-	  Color_Bottom[] = {0.267f, 0.267f, 0.267f};
 #define START_X 80
 #define START_Y 80
 Rect Rct_Left = {0, START_X - 6.0f, START_Y, HEIGHT},
@@ -59,6 +57,9 @@ Rect Rct_Left = {0, START_X - 6.0f, START_Y, HEIGHT},
 	 Rct_White_Bottom = {0, WIDTH, START_Y - 6.0f, START_Y};
 Rect Rct_Background = {START_X, 720 + START_X, 48 + START_Y, 384 + START_Y},
 	 Rct_Ground = {START_X, 720 + START_X, START_Y, 48 + START_Y};
+float Color_Left_Right[][3] = {{0.600f, 0.819f, 0.945f}, {0.345f, 0.561f, 0.698f}},
+	 Color_Bottom[] = {0.267f, 0.267f, 0.267f};
+float Color_White[] = {1.0f, 1.0f, 1.0f};
 Image Img_Background, Img_Ground;
 #define SCALE 3
 void Init_Game() {
