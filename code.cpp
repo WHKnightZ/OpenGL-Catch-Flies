@@ -1,5 +1,3 @@
-sai vị trí scale, cop thư viện trước, sau đó tạo project, cài đặt, code 1 file, về sau tách ra, cuối cùng tham khảo code mình up trên github
-
 #include <math.h>
 #include <GL/glut.h>
 #include <vector>
@@ -62,6 +60,7 @@ Rect Rct_Left = {0, START_X - 6.0f, START_Y, HEIGHT},
 Rect Rct_Background = {START_X, 720 + START_X, 48 + START_Y, 384 + START_Y},
 	 Rct_Ground = {START_X, 720 + START_X, START_Y, 48 + START_Y};
 Image Img_Background, Img_Ground;
+#define SCALE 3
 void Init_Game() {
 	Load_Texture_Swap(&Img_Background, "Images/Background.png");
 	Zoom_Image(&Img_Background, SCALE);
@@ -129,7 +128,6 @@ class c_Platformer {
 };
 Image c_Platformer::Img_Save;
 	c_Platformer::Load_Image();
-#define SCALE 3
 		Zoom_Image(&Img_Save, SCALE);
 	Rect Rct;
 	Image *Img;
