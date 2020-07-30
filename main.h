@@ -312,7 +312,7 @@ class c_Fly {
         Update_Rect();
     }
 
-    bool Is_Catched(float _x, float _y) {
+    bool Is_Caught(float _x, float _y) {
         if (_x - 20.0f < x && _x + 20.0f > x && _y - 6.0f < y && _y + 34.0f > y)
             return true;
         return false;
@@ -581,7 +581,7 @@ class c_Frog {
 
             std::vector<c_Fly>::iterator it = Flies.begin();
             while (it != Flies.end()) {
-                if (it->Is_Catched(x, y)) {
+                if (it->Is_Caught(x, y)) {
                     it = Flies.erase(it);
                     Score++;
                     Img_Score = &Img_Numbers[Score];
